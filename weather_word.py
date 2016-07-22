@@ -33,7 +33,7 @@ PATH_NAME = "//home//pi//weather_word//"  # set path to find apiboot.txt and log
 TIME_BETWEEN_CALLS = 900            # time in seconds between calls to the weather api
 TIME_BETWEEN_FAILED = 180           # time in seconds between failed calls to the weather api
 TIME_WAIT_STARTUP = 60              # time in seconds to wait after bootup to make first call
-OBJMAX = 13                         # set max number of objects to parse from weather data
+OBJMAX = 19                         # set max number of objects to parse from weather data
 
 def readApiBootFile(strip):
     # opens apiboot.txt file and reads the api key (obtain from weather underground) and one uncommented query line
@@ -573,12 +573,12 @@ def forecastWords(number, array):
         array[244] = 1
         array[245] = 1
         array[246] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '11':
         # light pixels for words representing 'showers'
         array[240] = 1
@@ -594,12 +594,12 @@ def forecastWords(number, array):
         array[223] = 1
         array[224] = 1
         array[225] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '13':
         # light pixels for words representing 'rain'
         array[222] = 1
@@ -621,12 +621,12 @@ def forecastWords(number, array):
         array[257] = 1
         array[258] = 1
         array[259] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '15':
         # light pixels for words representing 'thunderstorms'
         array[247] = 1
@@ -665,12 +665,12 @@ def forecastWords(number, array):
         array[244] = 1
         array[245] = 1
         array[246] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '19':
         # light pixels for words representing 'snow showers'
         array[234] = 1
@@ -690,12 +690,12 @@ def forecastWords(number, array):
         array[235] = 1
         array[236] = 1
         array[237] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '21':
         # light pixels for words representing 'snow'
         array[234] = 1
@@ -714,12 +714,12 @@ def forecastWords(number, array):
         array[283] = 1
         array[284] = 1
         array[285] = 1
-        array[173] = 1
-        array[174] = 1
-        array[175] = 1
-        array[176] = 1
-        array[177] = 1
-        array[178] = 1
+        array[273] = 1
+        array[274] = 1
+        array[275] = 1
+        array[276] = 1
+        array[277] = 1
+        array[278] = 1
     elif number == '23':
         # light pixels for words representing 'ice pellets'
         array[260] = 1
