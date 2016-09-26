@@ -14,3 +14,9 @@ A tutorial for the complete project can be found at www.instructables.com/id/LED
 hardware and software setup can be found at https://learn.adafruit.com/neopixels-on-raspberry-pi. The NeoPixel library
 for the Raspberry Pi (rpi_ws281x library) can be found at https://github.com/jgarff. The weather data and API are provided
 by Weather Underground, LLC (WUL). An API key can be obtained at www.wunderground.com/weather/api.
+
+CAUTION - This project contains 286 LEDs that together could pull as much as 17 amps at full brightness setting (60mA per
+pixel when set at 255,255,255 multiplied by 286 pixels equals 17.16 amps total). This current draw exceeds the capability of
+the hardware as published (breadboard, connecting wires, 4 amp power supply). Setting the brightness beyond the values 
+already set in this program could lead to hardware failure or injury. Additionally, depending on the type and quality of
+hardware used in duplicating this project, it may be necessary to lower brightness settings further to reduce current draw. 
