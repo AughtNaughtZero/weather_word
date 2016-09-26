@@ -14,9 +14,16 @@
 # hardware and software setup can be found at https://learn.adafruit.com/neopixels-on-raspberry-pi. The NeoPixel library
 # for the Raspberry Pi (rpi_ws281x library) can be found at https://github.com/jgarff. The weather data and API are provided
 # by Weather Underground, LLC (WUL). An API key can be obtained at www.wunderground.com/weather/api.
+#
+# CAUTION - This project contains 286 LEDs that together could pull as much as 17 amps at full brightness setting (60mA per
+# pixel when set at 255,255,255 multiplied by 286 pixels equals 17.16 amps total). This current draw exceeds the capability of
+# the hardware as published (breadboard, connecting wires, 4 amp power supply). Setting the brightness beyond the values 
+# already set in this program could lead to hardware failure or injury. Furthermore, depending on the type and quality of
+# hardware used in duplicating this project, it may be necessary to lower brightness settings further to reduce current draw. 
 
 import time
 import json
+import random
 from urllib.request import urlopen
 from neopixel import *
 
@@ -25,7 +32,7 @@ LED_COUNT      = 286                # Total number of LED pixels.
 LED_PIN        = 18                 # GPIO pin connected to the pixels (must support PWM!).
 LED_FREQ_HZ    = 800000             # LED signal frequency in hertz (usually 800khz)
 LED_DMA        = 5                  # DMA channel to use for generating signal (try 5)
-LED_BRIGHTNESS = 255                # Set to 0 for darkest and 255 for brightest
+LED_BRIGHTNESS = 85                 # CAUTION - SETTING VALUE BEYOND 85 COULD PULL CURRENT (AMPS) BEYOND HARDWARE DESIGN - Set to 0 for darkest and 255 for brightest
 LED_INVERT     = False              # True to invert the signal (when using NPN transistor level shift)
 
 # other constants
@@ -34,15 +41,15 @@ TIME_BETWEEN_CALLS = 900            # time in seconds between calls to the weath
 TIME_BETWEEN_FAILED = 300           # time in seconds between failed calls to the weather api
 OBJMAX = 19                         # set max number of objects to parse from weather data
 RAINBOW_BOOT_ITERATIONS = 8         # set iterations to correspond to Pi boot time and ensure wifi connectivity
-MAX_FAIL_LOOP_COUNT = 15            # maximum number of attempts to retrieve data from API before program terminates
+MAX_FAIL_LOOP_COUNT = 10            # maximum number of attempts to retrieve data from API before program terminates
 
 def readApiBootFile():
     # opens apiboot.txt file and reads the api key (obtain from weather underground) and one uncommented query line
     # this function ignores the '#' in the file for comments
     i = 0
-    a = [None]*2
+    a = [None]*3
     textFile = open(PATH_NAME + "apiboot.txt", "r")
-    while i < 2:
+    while i < 3:
         a[i] = textFile.readline().rstrip('\n')
         if a[i][0] != "#":
             i += 1
@@ -58,9 +65,30 @@ def writeLogFile(text, mode):
 def colorWipe(strip, color, wait_ms=10):
     # wipe color across display a pixel at a time
     for i in range(strip.numPixels()):
-        strip.setPixelColor(i, color)
+        strip.setPixelColor(i, Color(color[0],color[1],color[2]))
         time.sleep(wait_ms/1000.0)
     strip.show()
+
+def colorWipeRand(strip, color, wait_ms=4):
+    # shuffles pixels on and off and wipes color across display for a set period of time
+    startTime = time.time()
+    colors = {0:[0,0,0],1:color}
+    # set total number of pixels to be turned on versus turned off
+    j = int(0.95 * LED_COUNT)
+    k = LED_COUNT - j
+    # create and combine arrays of on and off pixels
+    a = [0] * k
+    b = [1] * j
+    c = a + b
+    # shuffle and display pixels for a set period of time
+    elapsedTime = time.time() - startTime
+    while elapsedTime < TIME_BETWEEN_FAILED:
+        random.shuffle(c)
+        for i in range(LED_COUNT):
+            strip.setPixelColor(i, Color(colors[c[i]][0],colors[c[i]][1],colors[c[i]][2]))
+            time.sleep(wait_ms/1000.0)
+        strip.show()
+        elapsedTime = time.time() - startTime
 
 def wheel(pos):
     # generate rainbow colors across 0-255 positions
@@ -81,7 +109,7 @@ def rainbow(strip, wait_ms=10, iterations=RAINBOW_BOOT_ITERATIONS):
         strip.show()
         time.sleep(wait_ms/1000.0)
 
-def parseWeatherData(strip, obj):
+def parseWeatherData(strip, obj, units):
     # parse data obtained from the weather api
     temp = [None]*OBJMAX                # array to hold temperature values
     humid = [None]*OBJMAX               # array to hold humidity values
@@ -90,9 +118,9 @@ def parseWeatherData(strip, obj):
     fcttime = [None]*OBJMAX             # array to hold time of forecast
 
     for i in range(OBJMAX):
-        temp[i] = str(obj["hourly_forecast"][i]["temp"]["english"])
+        temp[i] = str(obj["hourly_forecast"][i]["temp"][units])
         humid[i] = str(obj["hourly_forecast"][i]["humidity"])
-        wind[i] = str(obj["hourly_forecast"][i]["wspd"]["english"])
+        wind[i] = str(obj["hourly_forecast"][i]["wspd"][units])
         fct[i] = str(obj["hourly_forecast"][i]["fctcode"])
         fcttime[i] = str(obj["hourly_forecast"][i]["FCTTIME"]["civil"])
     return temp, humid, wind, fct, fcttime
@@ -747,7 +775,7 @@ def fetchWeatherData(strip):
     except:
         # utilize red color wipe to signal failed boot file read
         writeLogFile("\n\nFailed to read apiboot.txt file. Terminating Program.\nCheck that file exists.\nCheck that the file contains your API key.\nCheck that the file has at least one query line uncommented.", "a")
-        colorWipe(strip, Color(0,255,0))
+        colorWipe(strip, [0,170,0])
         raise SystemExit('failed to read apiboot file')
     else:
         apiUrl = "http://api.wunderground.com/api/" + str(apiVal[0]) + "/hourly/q/" + str(apiVal[1]) + ".json"
@@ -764,7 +792,7 @@ def fetchWeatherData(strip):
             writeLogFile('\n\nFailed to connect to internet after attempt ' + str(failedLoopCount) + '.', 'a')
             writeLogFile('\nProgram will terminate after ' + str(MAX_FAIL_LOOP_COUNT) + ' consecutive attempts.', 'a')
             writeLogFile('\nTrying again in ' + str(TIME_BETWEEN_FAILED) + ' seconds.', 'a')
-            colorWipe(strip, Color(255,255,0))
+            colorWipeRand(strip, [170,170,0])
 
         if success == True:            
             try:
@@ -781,7 +809,7 @@ def fetchWeatherData(strip):
                 writeLogFile('\n\nFailed to connect to API after attempt ' + str(failedLoopCount) + '.', 'a')
                 writeLogFile('\nProgram will terminate after ' + str(MAX_FAIL_LOOP_COUNT) + ' consecutive attempts.', 'a')
                 writeLogFile('\nTrying again in ' + str(TIME_BETWEEN_FAILED) + ' seconds.', 'a')
-                colorWipe(strip, Color(255,255,0))
+                colorWipeRand(strip, [170,170,0])
 
         if success == True:
             try:
@@ -792,7 +820,7 @@ def fetchWeatherData(strip):
             else:
                 # utilize red color wipe to signal error from api
                 writeLogFile('\n\nReceived an error response from the API: ' + error + '. Terminating program.','a')
-                colorWipe(strip, Color(0,255,0))
+                colorWipe(strip, [0,170,0])
                 raise SystemExit('some error from api')
 
         if success == True:
@@ -807,17 +835,14 @@ def fetchWeatherData(strip):
                 writeLogFile('\n\nAPI failed to provide forecast data after attempt ' + str(failedLoopCount) + '.', 'a')
                 writeLogFile('\nProgram will terminate after ' + str(MAX_FAIL_LOOP_COUNT) + ' consecutive attempts.', 'a')
                 writeLogFile('\nTrying again in ' + str(TIME_BETWEEN_FAILED) + ' seconds.', 'a')
-                colorWipe(strip, Color(255,255,0))                
+                colorWipeRand(strip, [170,170,0])                
 
-        if failedLoopCount > MAX_FAIL_LOOP_COUNT:
+        if failedLoopCount >= MAX_FAIL_LOOP_COUNT:
             writeLogFile('\n\nTerminating program after ' + str(MAX_FAIL_LOOP_COUNT) + ' attempts to retrieve data from API.','a')
-            colorWipe(strip, Color(0,255,0))
+            colorWipe(strip, [0,170,0])
             raise SystemExit('failed to retrieve data after multiple attempts')
             
-        if success == False:
-            time.sleep(TIME_BETWEEN_FAILED)
-            
-    return(obj)
+    return(obj,apiVal[2])
 
 def main():
     # Create NeoPixel object with appropriate configuration.
@@ -832,14 +857,14 @@ def main():
     
     # main routine to fetch, parse, and color weather data
     while True:
-        # call function to fetch weather data - function will terminate if bad or no data is returned
+        # call function to fetch weather data - function also returns units of temperature to display
         writeLogFile('-----Attempting to Fetch Data-----', 'w')
-        obj = fetchWeatherData(strip)
+        obj,units = fetchWeatherData(strip)
         writeLogFile('\n\n' + str(obj),'a')
         
         # call function to parse weather data
         writeLogFile('\n\n-----Parsing-----', 'a')
-        tempData, humidData, windData, fctData, fctTime = parseWeatherData(strip, obj)
+        tempData, humidData, windData, fctData, fctTime = parseWeatherData(strip, obj, units)
         
         # call function to assign pixel values to weather data
         writeLogFile('\n\n-----Coloring-----', 'a')
