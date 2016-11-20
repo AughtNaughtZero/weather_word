@@ -818,10 +818,13 @@ def fetchWeatherData(strip):
             except:
                 success = True
             else:
-                # utilize red color wipe to signal error from api
-                writeLogFile('\n\nReceived an error response from the API: ' + error + '. Terminating program.','a')
-                colorWipe(strip, [0,170,0])
-                raise SystemExit('some error from api')
+                # utilize yellow color wipe to signal error from api
+                success = False
+                failedLoopCount += 1
+                writeLogFile('\n\nReceived an error response from the API: "' + error + '" after attempt ' + str(failedLoopCount) + '.','a')
+                writeLogFile('\nProgram will terminate after ' + str(MAX_FAIL_LOOP_COUNT) + ' consecutive attempts.', 'a')
+                writeLogFile('\nTrying again in ' + str(TIME_BETWEEN_FAILED) + ' seconds.', 'a')
+                colorWipeRand(strip, [170,170,0])
 
         if success == True:
             try:
